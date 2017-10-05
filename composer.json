@@ -1,0 +1,13 @@
+{
+    "name": "yokesharun/laravelcrud",
+    "description": "A simple way to generate files for crud operation",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Arun Yokesh",
+            "email": "ayokesh.cse@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
