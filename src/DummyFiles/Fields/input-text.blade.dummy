@@ -1,0 +1,1 @@
+<input %%fieldType%% %%itemName%% class="fom-control" %%required%% />

@@ -10,6 +10,19 @@ use DB;
 class CRUDController extends Controller
 {
 
+	/**
+     * Create a new command instance.
+     *
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->viewDirectoryPath =  __DIR__ . '/../DummyFiles/';
+
+        $this->delimiter = config('crudgenerator.custom_delimiter') ? config('crudgenerator.custom_delimiter') : ['%%', '%%'];
+    }
+
 	 /**
      * CRUD wizard.
      *
@@ -72,7 +85,7 @@ class CRUDController extends Controller
         $validationRules .= "\n\t\t]);";
 
 
-        return \File::put(app_path('Http/Controllers/aa.php') , $this->replaceViewName($Dummy, $Table)
+        return \File::put(app_path('Http/Controllers/'.$Model.'Controller.php') , $this->replaceViewName($Dummy, $Table)
             ->replaceCrudName($Dummy, $Table)
             ->replaceCrudNameSingular($Dummy, str_singular($Table))
             ->replaceModelName($Dummy, $Model)
@@ -89,6 +102,87 @@ class CRUDController extends Controller
     protected function getDummyController()
     {
         return __DIR__ . '/../DummyFiles/Controller.dummy';
+    }
+
+
+    /**
+     * Default template configuration if not provided
+     *
+     * @return array
+     */
+    private function defaultTemplating()
+    {
+        return [
+            'index' => ['formHeadingHtml', 'formBodyHtml', 'crudName', 'crudNameCap', 'modelName', 'viewName', 'routeGroup', 'primaryKey'],
+            'form' => ['formFieldsHtml'],
+            'create' => ['crudName', 'crudNameCap', 'modelName', 'modelNameCap', 'viewName', 'routeGroup', 'viewTemplateDir'],
+            'edit' => ['crudName', 'crudNameSingular', 'crudNameCap', 'modelNameCap', 'modelName', 'viewName', 'routeGroup', 'primaryKey', 'viewTemplateDir'],
+            'show' => ['formHeadingHtml', 'formBodyHtml', 'formBodyHtmlForShowView', 'crudName', 'crudNameSingular', 'crudNameCap', 'modelName', 'viewName', 'routeGroup', 'primaryKey'],
+        ];
+    }
+
+
+
+    /**
+     * Generate files from stub
+     *
+     * @param $path
+     */
+    protected function templateStubs($path)
+    {
+        $dynamicViewTemplate = $this->defaultTemplating();
+
+        foreach ($dynamicViewTemplate as $name => $vars) {
+            $file = $this->viewDirectoryPath . $name . '.blade.stub';
+            $newFile = $path . $name . '.blade.php';
+            if (!File::copy($file, $newFile)) {
+                echo "failed to copy $file...\n";
+            } else {
+                $this->templateVars($newFile, $vars);
+                $this->userDefinedVars($newFile);
+            }
+        }
+    }
+
+
+    /**
+     * Create a generic input field using the form helper.
+     *
+     * @param  array $item
+     *
+     * @return string
+     */
+    protected function createInputField($item)
+    {
+        $required = ($item['required'] === true) ? ", 'required' => 'required'" : "";
+
+        $markup = File::get($this->viewDirectoryPath . 'Fields/input-text.blade.dummy');
+        $markup = str_replace('%%required%%', $required, $markup);
+        $markup = str_replace('%%fieldType%%', 'type="text"', $markup);
+        $markup = str_replace('%%itemName%%', $item['name'], $markup);
+
+        return $this->wrapField(
+            $item,
+            $markup
+        );
+    }
+
+
+    /**
+     * Form field wrapper.
+     *
+     * @param  string $item
+     * @param  string $field
+     *
+     * @return string
+     */
+    protected function wrapField($item, $field)
+    {
+        $formGroup = File::get($this->viewDirectoryPath . 'form-fields/wrap-field.blade.stub');
+
+        $labelText = "'" . ucwords(strtolower(str_replace('_', ' ', $item['name']))) . "'";
+
+        return sprintf($formGroup, $item['name'], $labelText, $field);
     }
 
 
