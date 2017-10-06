@@ -14,7 +14,7 @@ Installation steps will be updated soon here.
 
 ## About
 
-SimpleImage is developed and maintained by [Arun Yokesh](https://www.facebook.com/ayokesh).
+Laravel CRUD Generator is developed and maintained by [Arun Yokesh](https://www.facebook.com/ayokesh).
 
 Contributions are appreciated!
 
